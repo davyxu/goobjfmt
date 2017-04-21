@@ -82,6 +82,7 @@ func (self *TextMarshaler) writeAny(w *textWriter, v reflect.Value) error {
 
 	// We don't attempt to serialise every possible value type; only those
 	// that can occur in protocol buffers.
+
 	switch v.Kind() {
 	case reflect.Slice:
 		// Should only be a []byte; repeated fields are handled in writeStruct.
@@ -151,17 +152,35 @@ func (self *TextMarshaler) writeStruct(w *textWriter, sv reflect.Value) error {
 				continue
 			}
 
-			// Repeated field.
-			for j := 0; j < fv.Len(); j++ {
+			// []byte
+			if fv.Len() > 0 && fv.Index(0).Kind() == reflect.Uint8 {
+
 				if err := writeName(w, name); err != nil {
 					return err
 				}
+
+				if err := w.WriteByte('['); err != nil {
+					return err
+				}
+			}
+
+			// Repeated field.
+			for j := 0; j < fv.Len(); j++ {
+
+				v := fv.Index(j)
+
+				if v.Kind() != reflect.Uint8 {
+					if err := writeName(w, name); err != nil {
+						return err
+					}
+				}
+
 				if !w.compact {
 					if err := w.WriteByte(' '); err != nil {
 						return err
 					}
 				}
-				v := fv.Index(j)
+
 				if v.Kind() == reflect.Ptr && v.IsNil() {
 					// A nil message in a repeated field is not valid,
 					// but we can handle that more gracefully than panicking.
@@ -177,6 +196,13 @@ func (self *TextMarshaler) writeStruct(w *textWriter, sv reflect.Value) error {
 					return err
 				}
 			}
+
+			if fv.Len() > 0 && fv.Index(0).Kind() == reflect.Uint8 {
+				if _, err := w.WriteString("] "); err != nil {
+					return err
+				}
+			}
+
 			continue
 		}
 
