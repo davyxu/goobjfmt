@@ -13,8 +13,8 @@ import (
 
 // TextMarshaler is a configurable text format marshaler.
 type TextMarshaler struct {
-	Compact   bool // use compact text format (one line).
-	ExpandAny bool // expand google.protobuf.Any messages of known types
+	Compact       bool // use compact text format (one line).
+	IgnoreDefault bool
 }
 
 func (self *TextMarshaler) Marshal(w io.Writer, obj interface{}) error {
@@ -58,6 +58,38 @@ func writeName(w *textWriter, name string) error {
 	return w.WriteByte(':')
 }
 
+func (self *TextMarshaler) ignoreField(w *textWriter, v reflect.Value) bool {
+
+	if !self.IgnoreDefault {
+		return false
+	}
+
+	v = reflect.Indirect(v)
+
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		if v.Float() == 0 {
+			return true
+		}
+	case reflect.Int32, reflect.Int64, reflect.Int,
+		reflect.Uint32, reflect.Uint64, reflect.Uint:
+		if v.Int() == 0 {
+			return true
+		}
+	case reflect.Bool:
+		if !v.Bool() {
+			return true
+		}
+
+	case reflect.Slice, reflect.String:
+		if v.Len() == 0 {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (self *TextMarshaler) writeAny(w *textWriter, v reflect.Value) error {
 	v = reflect.Indirect(v)
 
@@ -90,6 +122,7 @@ func (self *TextMarshaler) writeAny(w *textWriter, v reflect.Value) error {
 			return err
 		}
 	case reflect.String:
+
 		if err := writeString(w, v.String()); err != nil {
 			return err
 		}
@@ -275,22 +308,25 @@ func (self *TextMarshaler) writeStruct(w *textWriter, sv reflect.Value) error {
 			continue
 		}
 
-		if err := writeName(w, name); err != nil {
-			return err
-		}
-		if !w.compact {
-			if err := w.WriteByte(' '); err != nil {
+		if !self.ignoreField(w, fv) {
+			if err := writeName(w, name); err != nil {
 				return err
 			}
-		}
+			if !w.compact {
+				if err := w.WriteByte(' '); err != nil {
+					return err
+				}
+			}
 
-		// Enums have a String method, so writeAny will work fine.
-		if err := self.writeAny(w, fv); err != nil {
-			return err
-		}
+			// Enums have a String method, so writeAny will work fine.
+			if err := self.writeAny(w, fv); err != nil {
+				return err
+			}
 
-		if err := w.WriteByte('\n'); err != nil {
-			return err
+			if err := w.WriteByte('\n'); err != nil {
+				return err
+			}
+
 		}
 
 	}
@@ -306,7 +342,7 @@ func (self *TextMarshaler) Text(obj interface{}) string {
 
 var (
 	defaultTextMarshaler = TextMarshaler{}
-	compactTextMarshaler = TextMarshaler{Compact: true}
+	compactTextMarshaler = TextMarshaler{Compact: true, IgnoreDefault: true}
 )
 
 func MarshalTextString(obj interface{}) string {
