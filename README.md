@@ -31,5 +31,3 @@ blog(Chinese): [http://www.cppblog.com/sunicdavy](http://www.cppblog.com/sunicda
 
 zhihu(Chinese): [http://www.zhihu.com/people/sunicdavy](http://www.zhihu.com/people/sunicdavy)
 
-issure: [https://github.com/davyxu/tabtoy/issues](https://github.com/davyxu/tabtoy/issues)
-
