@@ -65,6 +65,10 @@ func TestNumber(t *testing.T) {
 	t.Log(CompactTextString(input))
 }
 
+func TestString(t *testing.T) {
+	t.Log(CompactTextString(&MyData{Name: "源氏"}))
+}
+
 func TestPhone(t *testing.T) {
 	input := &AddressBook{
 		Person: []*Person{

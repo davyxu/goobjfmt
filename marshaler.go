@@ -13,8 +13,9 @@ import (
 
 // TextMarshaler is a configurable text format marshaler.
 type TextMarshaler struct {
-	Compact       bool // use compact text format (one line).
-	IgnoreDefault bool
+	Compact        bool // use compact text format (one line).
+	IgnoreDefault  bool // Do not output value when value equals its default value
+	OriginalString bool // Do not output string as byte
 }
 
 func (self *TextMarshaler) Marshal(w io.Writer, obj interface{}) error {
@@ -71,9 +72,12 @@ func (self *TextMarshaler) ignoreField(w *textWriter, v reflect.Value) bool {
 		if v.Float() == 0 {
 			return true
 		}
-	case reflect.Int32, reflect.Int64, reflect.Int,
-		reflect.Uint32, reflect.Uint64, reflect.Uint:
+	case reflect.Int32, reflect.Int64, reflect.Int:
 		if v.Int() == 0 {
+			return true
+		}
+	case reflect.Uint32, reflect.Uint64, reflect.Uint:
+		if v.Uint() == 0 {
 			return true
 		}
 	case reflect.Bool:

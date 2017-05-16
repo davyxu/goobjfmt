@@ -2,7 +2,6 @@ package goobjfmt
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -142,6 +141,7 @@ func (w *textWriter) unindent() {
 // we treat the string as a byte sequence, and we use octal escapes.
 // These differences are to maintain interoperability with the other
 // languages' implementations of the text format.
+
 func writeString(w *textWriter, s string) error {
 	// use WriteByte here to get any needed indent
 	if err := w.WriteByte('"'); err != nil {
@@ -165,11 +165,14 @@ func writeString(w *textWriter, s string) error {
 		case '\\':
 			_, err = w.w.Write(backslashBS)
 		default:
-			if isprint(c) {
-				err = w.w.WriteByte(c)
-			} else {
-				_, err = fmt.Fprintf(w.w, "\\%03o", c)
-			}
+
+			// 这里中文会被认为是不可打印字符而不会输出
+			err = w.w.WriteByte(c)
+			//if isprint(c) {
+			//	err = w.w.WriteByte(c)
+			//} else {
+			//	_, err = fmt.Fprintf(w.w, "\\%03o", c)
+			//}
 		}
 		if err != nil {
 			return err
