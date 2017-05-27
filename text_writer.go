@@ -45,7 +45,7 @@ func (w *textWriter) WriteString(s string) (n int, err error) {
 	}
 	// WriteString is typically called without newlines, so this
 	// codepath and its copy are rare.  We copy to avoid
-	// duplicating all of Write's logic here.
+	// duplicating all of BinaryWrite's logic here.
 	return w.Write([]byte(s))
 }
 
