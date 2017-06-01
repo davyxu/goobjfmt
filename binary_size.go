@@ -7,10 +7,15 @@ import (
 func dataSize(v reflect.Value) int {
 
 	switch v.Kind() {
-	case reflect.Array, reflect.Slice:
+	case reflect.Array:
 		if s := dataSize(v.Elem()); s >= 0 {
-			return s * v.Type().Len()
+			return s*v.Type().Len() + 4
 		}
+	case reflect.Slice:
+		l := v.Len()
+		elemSize := int(v.Type().Elem().Size())
+		return l*elemSize + 4
+
 	case reflect.String:
 		t := v.Len()
 		return t + 4
@@ -35,7 +40,7 @@ func dataSize(v reflect.Value) int {
 	return -1
 }
 
-func Size(obj interface{}) int {
+func BinarySize(obj interface{}) int {
 	v := reflect.Indirect(reflect.ValueOf(obj))
 	return dataSize(v)
 }

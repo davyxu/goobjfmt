@@ -6,13 +6,18 @@ import (
 	"reflect"
 )
 
+var (
+	ErrInvalidType = errors.New("invalid type")
+	ErrOutOfData = errors.New("out of data")
+)
+
 func BinaryWrite(obj interface{}) ([]byte, error) {
 
 	// Fallback to reflect-based encoding.
 	v := reflect.Indirect(reflect.ValueOf(obj))
 	size := dataSize(v)
 	if size < 0 {
-		return nil, errors.New("invalid type " + reflect.TypeOf(obj).String())
+		return nil, ErrInvalidType
 	}
 
 	buf := make([]byte, size)

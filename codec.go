@@ -14,102 +14,102 @@ type coder struct {
 type decoder coder
 type encoder coder
 
-func (d *decoder) bool() bool {
-	x := d.buf[0]
-	d.buf = d.buf[1:]
+func (self *decoder) bool() bool {
+	x := self.buf[0]
+	self.buf = self.buf[1:]
 	return x != 0
 }
 
-func (e *encoder) bool(x bool) {
+func (self *encoder) bool(x bool) {
 	if x {
-		e.buf[0] = 1
+		self.buf[0] = 1
 	} else {
-		e.buf[0] = 0
+		self.buf[0] = 0
 	}
-	e.buf = e.buf[1:]
+	self.buf = self.buf[1:]
 }
 
-func (d *decoder) uint8() uint8 {
-	x := d.buf[0]
-	d.buf = d.buf[1:]
+func (self *decoder) uint8() uint8 {
+	x := self.buf[0]
+	self.buf = self.buf[1:]
 	return x
 }
 
-func (e *encoder) uint8(x uint8) {
-	e.buf[0] = x
-	e.buf = e.buf[1:]
+func (self *encoder) uint8(x uint8) {
+	self.buf[0] = x
+	self.buf = self.buf[1:]
 }
 
-func (d *decoder) uint16() uint16 {
-	x := d.order.Uint16(d.buf[0:2])
-	d.buf = d.buf[2:]
+func (self *decoder) uint16() uint16 {
+	x := self.order.Uint16(self.buf[0:2])
+	self.buf = self.buf[2:]
 	return x
 }
 
-func (e *encoder) uint16(x uint16) {
-	e.order.PutUint16(e.buf[0:2], x)
-	e.buf = e.buf[2:]
+func (self *encoder) uint16(x uint16) {
+	self.order.PutUint16(self.buf[0:2], x)
+	self.buf = self.buf[2:]
 }
 
-func (d *decoder) uint32() uint32 {
-	x := d.order.Uint32(d.buf[0:4])
-	d.buf = d.buf[4:]
+func (self *decoder) uint32() uint32 {
+	x := self.order.Uint32(self.buf[0:4])
+	self.buf = self.buf[4:]
 	return x
 }
 
-func (e *encoder) uint32(x uint32) {
-	e.order.PutUint32(e.buf[0:4], x)
-	e.buf = e.buf[4:]
+func (self *encoder) uint32(x uint32) {
+	self.order.PutUint32(self.buf[0:4], x)
+	self.buf = self.buf[4:]
 }
 
-func (d *decoder) uint64() uint64 {
-	x := d.order.Uint64(d.buf[0:8])
-	d.buf = d.buf[8:]
+func (self *decoder) uint64() uint64 {
+	x := self.order.Uint64(self.buf[0:8])
+	self.buf = self.buf[8:]
 	return x
 }
 
-func (e *encoder) uint64(x uint64) {
-	e.order.PutUint64(e.buf[0:8], x)
-	e.buf = e.buf[8:]
+func (self *encoder) uint64(x uint64) {
+	self.order.PutUint64(self.buf[0:8], x)
+	self.buf = self.buf[8:]
 }
-func (d *decoder) string() string {
-	l := d.int32()
+func (self *decoder) bytes() []byte {
+	l := self.int32()
 	buf := make([]byte, l)
 
-	copy(buf, d.buf[0:l])
-	d.buf = d.buf[l:]
-	return string(buf)
+	copy(buf, self.buf[0:l])
+	self.buf = self.buf[l:]
+	return buf
 }
 
-func (e *encoder) string(x string) {
+func (self *encoder) bytes(x []byte) {
 	l := len(x)
-	e.int32(int32(l))
-	copy(e.buf, []byte(x))
-	e.buf = e.buf[l:]
+	self.int32(int32(l))
+	copy(self.buf, []byte(x))
+	self.buf = self.buf[l:]
 }
 
-func (d *decoder) int8() int8 { return int8(d.uint8()) }
+func (self *decoder) int8() int8 { return int8(self.uint8()) }
 
-func (e *encoder) int8(x int8) { e.uint8(uint8(x)) }
+func (self *encoder) int8(x int8) { self.uint8(uint8(x)) }
 
-func (d *decoder) int16() int16 { return int16(d.uint16()) }
+func (self *decoder) int16() int16 { return int16(self.uint16()) }
 
-func (e *encoder) int16(x int16) { e.uint16(uint16(x)) }
+func (self *encoder) int16(x int16) { self.uint16(uint16(x)) }
 
-func (d *decoder) int32() int32 { return int32(d.uint32()) }
+func (self *decoder) int32() int32 { return int32(self.uint32()) }
 
-func (e *encoder) int32(x int32) { e.uint32(uint32(x)) }
+func (self *encoder) int32(x int32) { self.uint32(uint32(x)) }
 
-func (d *decoder) int64() int64 { return int64(d.uint64()) }
+func (self *decoder) int64() int64 { return int64(self.uint64()) }
 
-func (e *encoder) int64(x int64) { e.uint64(uint64(x)) }
+func (self *encoder) int64(x int64) { self.uint64(uint64(x)) }
 
-func (d *decoder) value(v reflect.Value) {
+func (self *decoder) value(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Array:
-		l := v.Len()
+		l := int(self.int32())
 		for i := 0; i < l; i++ {
-			d.value(v.Index(i))
+			self.value(v.Index(i))
 		}
 
 	case reflect.Struct:
@@ -122,54 +122,70 @@ func (d *decoder) value(v reflect.Value) {
 			// costly (run "go test -bench=ReadStruct" and compare
 			// results when making changes to this code).
 			if vv := v.Field(i); v.CanSet() || t.Field(i).Name != "_" {
-				d.value(vv)
+				self.value(vv)
 			} else {
-				d.skip(vv)
+				self.skip(vv)
 			}
 		}
 	case reflect.String:
-		v.SetString(d.string())
+		v.SetString(string(self.bytes()))
 
 	case reflect.Slice:
-		l := v.Len()
-		for i := 0; i < l; i++ {
-			d.value(v.Index(i))
+
+		if v.Type().Elem().Kind() == reflect.Uint8 {
+
+			v.SetBytes(self.bytes())
+
+		} else {
+			l := int(self.int32())
+			slice := reflect.MakeSlice(v.Type(), l, l)
+
+			for i := 0; i < l; i++ {
+
+				sliceValue := reflect.New(slice.Type().Elem()).Elem()
+
+				self.value(sliceValue)
+				slice.Index(i).Set(sliceValue)
+			}
+
+			v.Set(slice)
 		}
 
 	case reflect.Bool:
-		v.SetBool(d.bool())
+		v.SetBool(self.bool())
 
 	case reflect.Int8:
-		v.SetInt(int64(d.int8()))
+		v.SetInt(int64(self.int8()))
 	case reflect.Int16:
-		v.SetInt(int64(d.int16()))
+		v.SetInt(int64(self.int16()))
 	case reflect.Int32:
-		v.SetInt(int64(d.int32()))
+		v.SetInt(int64(self.int32()))
 	case reflect.Int64:
-		v.SetInt(d.int64())
+		v.SetInt(self.int64())
 
 	case reflect.Uint8:
-		v.SetUint(uint64(d.uint8()))
+		v.SetUint(uint64(self.uint8()))
 	case reflect.Uint16:
-		v.SetUint(uint64(d.uint16()))
+		v.SetUint(uint64(self.uint16()))
 	case reflect.Uint32:
-		v.SetUint(uint64(d.uint32()))
+		v.SetUint(uint64(self.uint32()))
 	case reflect.Uint64:
-		v.SetUint(d.uint64())
+		v.SetUint(self.uint64())
 
 	case reflect.Float32:
-		v.SetFloat(float64(math.Float32frombits(d.uint32())))
+		v.SetFloat(float64(math.Float32frombits(self.uint32())))
 	case reflect.Float64:
-		v.SetFloat(math.Float64frombits(d.uint64()))
+		v.SetFloat(math.Float64frombits(self.uint64()))
 	}
 }
 
-func (e *encoder) value(v reflect.Value) {
+func (self *encoder) value(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Array:
 		l := v.Len()
+		self.int32(int32(l))
 		for i := 0; i < l; i++ {
-			e.value(v.Index(i))
+			self.value(v.Index(i))
 		}
 
 	case reflect.Struct:
@@ -178,66 +194,75 @@ func (e *encoder) value(v reflect.Value) {
 		for i := 0; i < l; i++ {
 			// see comment for corresponding code in decoder.value()
 			if v := v.Field(i); v.CanSet() || t.Field(i).Name != "_" {
-				e.value(v)
+				self.value(v)
 			} else {
-				e.skip(v)
+				self.skip(v)
 			}
 		}
 
 	case reflect.Slice:
-		l := v.Len()
-		for i := 0; i < l; i++ {
-			e.value(v.Index(i))
+
+		if v.Type().Elem().Kind() == reflect.Uint8 {
+
+			self.bytes(v.Bytes())
+
+		} else {
+			l := v.Len()
+			self.int32(int32(l))
+			for i := 0; i < l; i++ {
+				self.value(v.Index(i))
+			}
 		}
+
 	case reflect.String:
-		e.string(v.String())
+		self.bytes([]byte(v.String()))
 
 	case reflect.Bool:
-		e.bool(v.Bool())
+		self.bool(v.Bool())
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		switch v.Type().Kind() {
 		case reflect.Int8:
-			e.int8(int8(v.Int()))
+			self.int8(int8(v.Int()))
 		case reflect.Int16:
-			e.int16(int16(v.Int()))
+			self.int16(int16(v.Int()))
 		case reflect.Int32:
-			e.int32(int32(v.Int()))
+			self.int32(int32(v.Int()))
 		case reflect.Int64:
-			e.int64(v.Int())
+			self.int64(v.Int())
 		}
 
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		switch v.Type().Kind() {
 		case reflect.Uint8:
-			e.uint8(uint8(v.Uint()))
+			self.uint8(uint8(v.Uint()))
 		case reflect.Uint16:
-			e.uint16(uint16(v.Uint()))
+			self.uint16(uint16(v.Uint()))
 		case reflect.Uint32:
-			e.uint32(uint32(v.Uint()))
+			self.uint32(uint32(v.Uint()))
 		case reflect.Uint64:
-			e.uint64(v.Uint())
+			self.uint64(v.Uint())
 		}
 
 	case reflect.Float32, reflect.Float64:
 		switch v.Type().Kind() {
 		case reflect.Float32:
-			e.uint32(math.Float32bits(float32(v.Float())))
+			self.uint32(math.Float32bits(float32(v.Float())))
 		case reflect.Float64:
-			e.uint64(math.Float64bits(v.Float()))
+			self.uint64(math.Float64bits(v.Float()))
 		}
 
 	}
 }
 
-func (d *decoder) skip(v reflect.Value) {
-	d.buf = d.buf[dataSize(v):]
+func (self *decoder) skip(v reflect.Value) {
+	self.buf = self.buf[dataSize(v):]
 }
 
-func (e *encoder) skip(v reflect.Value) {
+func (self *encoder) skip(v reflect.Value) {
 	n := dataSize(v)
-	for i := range e.buf[0:n] {
-		e.buf[i] = 0
+	for i := range self.buf[0:n] {
+		self.buf[i] = 0
 	}
-	e.buf = e.buf[n:]
+	self.buf = self.buf[n:]
 }
