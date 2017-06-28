@@ -35,6 +35,8 @@ func dataSize(v reflect.Value) int {
 			sum += s
 		}
 		return sum
+	case reflect.Int:
+		panic("do not support int, use int32/int64 instead")
 	}
 
 	return -1
