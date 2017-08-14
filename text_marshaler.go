@@ -173,7 +173,13 @@ func (self *TextMarshaler) writeStruct(w *textWriter, sv reflect.Value) error {
 	for i := 0; i < sv.NumField(); i++ {
 		fv := sv.Field(i)
 
-		name := st.Field(i).Name
+		stf := st.Field(i)
+
+		if tag := stf.Tag.Get("obj"); tag == "-" {
+			continue
+		}
+
+		name := stf.Name
 
 		if fv.Kind() == reflect.Ptr && fv.IsNil() {
 			// Field not filled in. This could be an optional field or
