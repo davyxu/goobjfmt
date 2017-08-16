@@ -22,7 +22,7 @@ func (self *TextMarshaler) Marshal(w io.Writer, obj interface{}) error {
 
 	val := reflect.ValueOf(obj)
 
-	if obj == nil || val.IsNil() {
+	if obj == nil || (val.Kind() == reflect.Ptr && val.IsNil()) {
 		w.Write([]byte("<nil>"))
 		return nil
 	}
