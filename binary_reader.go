@@ -18,7 +18,7 @@ func BinaryRead(data []byte, obj interface{}) error {
 		v = v.Elem()
 	}
 
-	size := dataSize(v)
+	size := dataSize(v, nil)
 	if size < 0 {
 		return ErrInvalidType
 	}

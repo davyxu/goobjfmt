@@ -11,6 +11,55 @@ type P struct {
 	Name string
 }
 
+//func TestPtr(t *testing.T) {
+//
+//	var v int32 = 100
+//
+//	data, err := BinaryWrite(&struct {
+//		Ignore *int32
+//	}{
+//		&v,
+//	})
+//
+//	if err != nil {
+//		fmt.Println(err)
+//	} else {
+//		fmt.Println(data)
+//	}
+//
+//	var out struct {
+//		Ignore *int32
+//	}
+//
+//	err = BinaryRead(data, &out)
+//
+//	if err != nil {
+//		fmt.Println(err)
+//	} else {
+//		fmt.Println(*out.Ignore)
+//	}
+//
+//	if *out.Ignore != v {
+//		t.FailNow()
+//	}
+//
+//}
+
+func TestBinaryIgnore(t *testing.T) {
+
+	data, err := BinaryWrite(&struct {
+		Ignore int32 `binary:"-"`
+	}{
+		100,
+	})
+
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(data)
+	}
+}
+
 func TestWrite(t *testing.T) {
 
 	var input P

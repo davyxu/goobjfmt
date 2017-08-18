@@ -175,7 +175,7 @@ func (self *TextMarshaler) writeStruct(w *textWriter, sv reflect.Value) error {
 
 		stf := st.Field(i)
 
-		if tag := stf.Tag.Get("obj"); tag == "-" {
+		if tag := stf.Tag.Get("text"); tag == "-" {
 			continue
 		}
 

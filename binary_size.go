@@ -4,11 +4,11 @@ import (
 	"reflect"
 )
 
-func dataSize(v reflect.Value) int {
+func dataSize(v reflect.Value, sf *reflect.StructField) int {
 
 	switch v.Kind() {
 	case reflect.Array:
-		if s := dataSize(v.Elem()); s >= 0 {
+		if s := dataSize(v.Elem(), nil); s >= 0 {
 			return s*v.Type().Len() + 4
 		}
 	case reflect.Slice:
@@ -26,17 +26,41 @@ func dataSize(v reflect.Value) int {
 		return int(v.Type().Size())
 	case reflect.Struct:
 		sum := 0
+
+		st := v.Type()
+
 		for i := 0; i < v.NumField(); i++ {
 
-			s := dataSize(v.Field(i))
+			fv := v.Field(i)
+
+			sf := st.Field(i)
+
+			s := dataSize(fv, &sf)
 			if s < 0 {
 				return -1
 			}
 			sum += s
 		}
 		return sum
+
 	case reflect.Int:
 		panic("do not support int, use int32/int64 instead")
+		//case reflect.Ptr:
+		//	ev := v.Elem()
+		//
+		//	return dataSize(ev, sf)
+		//case reflect.Invalid:
+		//	return 0
+		//case reflect.Interface:
+		return 0
+	default:
+
+		if sf != nil && sf.Tag.Get("binary") == "-" {
+			return 0
+		} else {
+			panic("size: unsupport kind: " + v.Kind().String())
+		}
+
 	}
 
 	return -1
@@ -44,5 +68,5 @@ func dataSize(v reflect.Value) int {
 
 func BinarySize(obj interface{}) int {
 	v := reflect.Indirect(reflect.ValueOf(obj))
-	return dataSize(v)
+	return dataSize(v, nil)
 }

@@ -176,6 +176,18 @@ func (self *decoder) value(v reflect.Value) {
 		v.SetFloat(float64(math.Float32frombits(self.uint32())))
 	case reflect.Float64:
 		v.SetFloat(math.Float64frombits(self.uint64()))
+	case reflect.Interface:
+
+	//case reflect.Ptr:
+	//
+	//	valuePtr := reflect.New(v.Type().Elem())
+	//
+	//	self.value(valuePtr.Elem())
+	//
+	//	v.Set(valuePtr)
+
+	default:
+		panic("encode: unsupport kind: " + v.Kind().String())
 	}
 }
 
@@ -192,8 +204,14 @@ func (self *encoder) value(v reflect.Value) {
 		t := v.Type()
 		l := v.NumField()
 		for i := 0; i < l; i++ {
-			// see comment for corresponding code in decoder.value()
-			if v := v.Field(i); v.CanSet() || t.Field(i).Name != "_" {
+
+			v := v.Field(i)
+
+			tt := t.Field(i)
+
+			tag := tt.Tag.Get("binary")
+
+			if (v.CanSet() || tt.Name != "_") && tag != "-" {
 				self.value(v)
 			} else {
 				self.skip(v)
@@ -251,16 +269,21 @@ func (self *encoder) value(v reflect.Value) {
 		case reflect.Float64:
 			self.uint64(math.Float64bits(v.Float()))
 		}
+	//case reflect.Ptr:
+	//	self.value(v.Elem())
+	//case reflect.Invalid:
 
+	default:
+		panic("encode: unsupport kind: " + v.Kind().String())
 	}
 }
 
 func (self *decoder) skip(v reflect.Value) {
-	self.buf = self.buf[dataSize(v):]
+	self.buf = self.buf[dataSize(v, nil):]
 }
 
 func (self *encoder) skip(v reflect.Value) {
-	n := dataSize(v)
+	n := dataSize(v, nil)
 	for i := range self.buf[0:n] {
 		self.buf[i] = 0
 	}
