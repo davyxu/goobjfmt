@@ -14,11 +14,11 @@ func dataSize(v reflect.Value, sf *reflect.StructField) int {
 	case reflect.Slice:
 		l := v.Len()
 		elemSize := int(v.Type().Elem().Size())
-		return l*elemSize + 4
+		return l*elemSize + 2
 
 	case reflect.String:
 		t := v.Len()
-		return t + 4
+		return t + 2
 	case reflect.Bool,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -45,13 +45,6 @@ func dataSize(v reflect.Value, sf *reflect.StructField) int {
 
 	case reflect.Int:
 		panic("do not support int, use int32/int64 instead")
-		//case reflect.Ptr:
-		//	ev := v.Elem()
-		//
-		//	return dataSize(ev, sf)
-		//case reflect.Invalid:
-		//	return 0
-		//case reflect.Interface:
 		return 0
 	default:
 
