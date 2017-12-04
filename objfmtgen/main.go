@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davyxu/protoplus/codegen"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/util"
 	"os"
@@ -27,21 +26,6 @@ func genAdaptor(ctx *Context, f func(*Context) error) util.GenFunc {
 func main() {
 
 	var ctx Context
-
-	// 修改结构体消息ID生成函数
-	codegen.UsefulFunc["StructMsgID"] = func(raw interface{}) (msgid int) {
-		d := raw.(*model.Descriptor)
-
-		if d.Kind == model.Kind_Struct {
-			msgid = d.TagValueInt("MsgID")
-		}
-
-		if msgid != 0 {
-			return
-		}
-
-		return int(uint16(util.StringHash(*flagPackage + "." + d.Name)))
-	}
 
 	util.RegisterGenerator(
 		&util.Generator{
