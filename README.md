@@ -27,7 +27,6 @@ like
 
 Star me if you like or use, thanks
 
-blog(Chinese): [http://www.cppblog.com/sunicdavy](http://www.cppblog.com/sunicdavy)
+开源讨论群: 527430600
 
-zhihu(Chinese): [http://www.zhihu.com/people/sunicdavy](http://www.zhihu.com/people/sunicdavy)
-
+知乎: [http://www.zhihu.com/people/sunicdavy](http://www.zhihu.com/people/sunicdavy)
