@@ -73,7 +73,7 @@ func (self *encoder) uint64(x uint64) {
 	self.buf = self.buf[8:]
 }
 func (self *decoder) bytes() []byte {
-	l := self.int32()
+	l := self.uint16()
 	buf := make([]byte, l)
 
 	copy(buf, self.buf[0:l])
@@ -83,7 +83,7 @@ func (self *decoder) bytes() []byte {
 
 func (self *encoder) bytes(x []byte) {
 	l := len(x)
-	self.int32(int32(l))
+	self.uint16(uint16(l))
 	copy(self.buf, []byte(x))
 	self.buf = self.buf[l:]
 }
@@ -107,7 +107,7 @@ func (self *encoder) int64(x int64) { self.uint64(uint64(x)) }
 func (self *decoder) value(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Array:
-		l := int(self.int32())
+		l := int(self.uint16())
 		for i := 0; i < l; i++ {
 			self.value(v.Index(i))
 		}
@@ -137,7 +137,7 @@ func (self *decoder) value(v reflect.Value) {
 			v.SetBytes(self.bytes())
 
 		} else {
-			l := int(self.int32())
+			l := int(self.uint16())
 			slice := reflect.MakeSlice(v.Type(), l, l)
 
 			for i := 0; i < l; i++ {
@@ -195,7 +195,7 @@ func (self *encoder) value(v reflect.Value) {
 	switch v.Kind() {
 	case reflect.Array:
 		l := v.Len()
-		self.int32(int32(l))
+		self.uint16(uint16(l))
 		for i := 0; i < l; i++ {
 			self.value(v.Index(i))
 		}
@@ -226,7 +226,7 @@ func (self *encoder) value(v reflect.Value) {
 
 		} else {
 			l := v.Len()
-			self.int32(int32(l))
+			self.uint16(uint16(l))
 			for i := 0; i < l; i++ {
 				self.value(v.Index(i))
 			}
