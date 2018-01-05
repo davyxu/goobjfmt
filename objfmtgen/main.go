@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/davyxu/protoplus/codegen"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/util"
 	"os"
@@ -26,6 +27,7 @@ func genAdaptor(ctx *Context, f func(*Context) error) util.GenFunc {
 func main() {
 
 	var ctx Context
+	ctx.DescriptorSet = new(model.DescriptorSet)
 
 	util.RegisterGenerator(
 		&util.Generator{
@@ -35,9 +37,19 @@ func main() {
 		},
 	)
 
-	err := util.RunGenerator()
+	flag.Parse()
 
-	if err != nil {
+	if err := util.ParseFileList(ctx.DescriptorSet); err != nil {
+		fmt.Println("ParseFileList error: ", err)
+		os.Exit(1)
+	}
+
+	if *codegen.FlagGenSuggestMsgID {
+		codegen.GenSuggestMsgID(ctx.DescriptorSet)
+		return
+	}
+
+	if err := util.RunGenerator(ctx.DescriptorSet); err != nil {
 		fmt.Println("Generate error: ", err)
 		os.Exit(1)
 	}

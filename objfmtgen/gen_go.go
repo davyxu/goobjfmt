@@ -49,7 +49,12 @@ func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end
 
 func init() {
 	{{range .Structs}} {{ if IsMessage . }}
-	cellnet.RegisterMessageMeta("binary","{{$.PackageName}}.{{.Name}}", reflect.TypeOf((*{{.Name}})(nil)).Elem(), {{StructMsgID .}}) {{end}} {{end}}
+	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
+		Codec: cellnet.MustGetCodec("binary"),
+		Name:  "{{$.PackageName}}.{{.Name}}",
+		Type:  reflect.TypeOf((*{{.Name}})(nil)).Elem(),
+		ID:    {{StructMsgID .}},
+	}) {{end}} {{end}}
 }
 
 `
