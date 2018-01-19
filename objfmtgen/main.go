@@ -3,14 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/davyxu/protoplus/codegen"
 	"github.com/davyxu/protoplus/model"
+	"github.com/davyxu/protoplus/msgidutil"
 	"github.com/davyxu/protoplus/util"
 	"os"
 )
 
 var (
-	flagPackage = flag.String("package", "", "package name in source files")
+	flagPackage         = flag.String("package", "", "package name in source files")
+	flagGenSuggestMsgID = flag.Bool("GenSuggestMsgID", false, "Generate suggest msgid, default is false")
 )
 
 func genAdaptor(ctx *Context, f func(*Context) error) util.GenFunc {
@@ -44,8 +45,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *codegen.FlagGenSuggestMsgID {
-		codegen.GenSuggestMsgID(ctx.DescriptorSet)
+	if *flagGenSuggestMsgID {
+		msgidutil.GenSuggestMsgID(ctx.DescriptorSet)
 		return
 	}
 
