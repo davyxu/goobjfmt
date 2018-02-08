@@ -16,6 +16,7 @@ import (
 	"reflect"
 	_ "github.com/davyxu/cellnet/codec/binary"
 	"github.com/davyxu/cellnet"
+	"github.com/davyxu/cellnet/codec"
 )
 {{range $a, $enumobj := .Enums}}
 type {{.Name}} int32
@@ -50,8 +51,7 @@ func (self *{{.Name}}) String() string { return fmt.Sprintf("%+v",*self) } {{end
 func init() {
 	{{range .Structs}} {{ if IsMessage . }}
 	cellnet.RegisterMessageMeta(&cellnet.MessageMeta{
-		Codec: cellnet.MustGetCodec("binary"),
-		Name:  "{{$.PackageName}}.{{.Name}}",
+		Codec: codec.MustGetCodec("binary"),	
 		Type:  reflect.TypeOf((*{{.Name}})(nil)).Elem(),
 		ID:    {{StructMsgID .}},
 	}) {{end}} {{end}}
