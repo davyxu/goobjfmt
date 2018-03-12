@@ -42,7 +42,7 @@ func (self {{$enumobj.Name}}) String() string {
 {{range .Structs}}
 {{ObjectLeadingComment .}}
 type {{.Name}} struct{	{{range .Fields}}
-	{{GoFieldName .}} {{GoTypeName .}} {{FieldTrailingComment .}} {{end}}
+	{{GoFieldName .}} {{GoTypeName .}} {{GoStructTag .}}{{FieldTrailingComment .}} {{end}}
 }
 {{end}}
 {{range .Structs}}
