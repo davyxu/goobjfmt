@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/davyxu/protoplus/gen"
 	"github.com/davyxu/protoplus/model"
 	"github.com/davyxu/protoplus/msgidutil"
 	"github.com/davyxu/protoplus/util"
@@ -14,7 +15,7 @@ var (
 	flagGenSuggestMsgID = flag.Bool("GenSuggestMsgID", false, "Generate suggest msgid, default is false")
 )
 
-func genAdaptor(ctx *Context, f func(*Context) error) util.GenFunc {
+func genAdaptor(ctx *Context, f func(*Context) error) gen.GenFunc {
 
 	return func(dset *model.DescriptorSet, fileName string) error {
 		ctx.OutputFileName = fileName
@@ -30,8 +31,8 @@ func main() {
 	var ctx Context
 	ctx.DescriptorSet = new(model.DescriptorSet)
 
-	util.RegisterGenerator(
-		&util.Generator{
+	gen.RegisterGenerator(
+		&gen.Generator{
 			FlagName:    "go_out",
 			FlagComment: "go source output",
 			GenFunc:     genAdaptor(&ctx, gen_go),
@@ -50,7 +51,7 @@ func main() {
 		return
 	}
 
-	if err := util.RunGenerator(ctx.DescriptorSet); err != nil {
+	if err := gen.RunGenerator(ctx.DescriptorSet); err != nil {
 		fmt.Println("Generate error: ", err)
 		os.Exit(1)
 	}
