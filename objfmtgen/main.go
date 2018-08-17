@@ -28,18 +28,10 @@ func genAdaptor(ctx *Context, f func(*Context) error) gen.GenFunc {
 
 func main() {
 
+	flag.Parse()
+
 	var ctx Context
 	ctx.DescriptorSet = new(model.DescriptorSet)
-
-	gen.RegisterGenerator(
-		&gen.Generator{
-			FlagName:    "go_out",
-			FlagComment: "go source output",
-			GenFunc:     genAdaptor(&ctx, gen_go),
-		},
-	)
-
-	flag.Parse()
 
 	if err := util.ParseFileList(ctx.DescriptorSet); err != nil {
 		fmt.Println("ParseFileList error: ", err)
@@ -51,7 +43,7 @@ func main() {
 		return
 	}
 
-	if err := gen.RunGenerator(ctx.DescriptorSet); err != nil {
+	if err := GenGo(&ctx); err != nil {
 		fmt.Println("Generate error: ", err)
 		os.Exit(1)
 	}

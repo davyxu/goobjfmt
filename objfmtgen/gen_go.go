@@ -59,7 +59,7 @@ func init() {
 
 `
 
-func gen_go(ctx *Context) error {
+func GenGo(ctx *Context) error {
 
 	gen := codegen.NewCodeGen("go").
 		RegisterTemplateFunc(codegen.UsefulFunc).
